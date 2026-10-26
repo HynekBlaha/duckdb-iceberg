@@ -287,6 +287,18 @@ optional<IcebergFileScanTask> IcebergScanPlanner::GetScanTask(idx_t file_id) con
 }
 
 idx_t IcebergScanPlanner::GetTotalFileCount() const {
+	{
+		annotated_lock_guard<annotated_mutex> guard(shared_state->lock);
+		if (!table_filters.HasFilters() && !scan_order.GetOptions() && !HasTransactionData()) {
+			InitializeView(guard);
+			auto count =
+			    IcebergScanStatistics(data_manifests, data_manifest_matches, delete_manifests, delete_manifest_matches)
+			        .ExactFileCount();
+			if (count) {
+				return *count;
+			}
+		}
+	}
 	idx_t file_id = 0;
 	while (GetDataFileDescriptor(file_id)) {
 		file_id++;

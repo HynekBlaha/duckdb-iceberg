@@ -5,7 +5,7 @@
 namespace duckdb {
 
 //! Count policy for a pruned manifest view. Does not load manifests or advance scan cursors.
-//! Estimates may account for delete counts; exact counts require no matching delete manifests.
+//! Row estimates may account for delete counts; exact row counts require no matching delete manifests.
 class IcebergScanStatistics {
 public:
 	IcebergScanStatistics(const vector<BoundIcebergManifestListEntry> &data_manifests,
@@ -15,6 +15,7 @@ public:
 
 	optional<idx_t> EstimateCardinality() const;
 	optional<idx_t> ExactRowCount() const;
+	optional<idx_t> ExactFileCount() const;
 
 private:
 	optional<idx_t> CountDataRows() const;
